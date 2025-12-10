@@ -3,71 +3,91 @@
 ## Project Report
 
 **DSCI 4411 - Fundamentals of Data Mining**  
-**The American University in Cairo - Fall 2025**  
-**Due: December 10, 2025**
+**The American University in Cairo - Fall 2025**
 
 ---
 
 ## 1. Introduction
 
-This project explores classification and clustering techniques using a dataset of 1,200 superheroes/villains. The goal is to build models that can distinguish between heroes and villains based on their attributes (powers, approval ratings, casualties) and to identify meaningful archetypes through clustering.
+This project explores classification and clustering techniques using a dataset of 1,200 superheroes/villains. The goal is to:
+1. Build models to classify heroes vs villains based on attributes
+2. Identify meaningful archetypes through clustering
 
-### Dataset Overview
-The dataset contains 1200 records with:
-- **Target**: `is_good` (1=Hero, 0=Villain). 65% are Heroes.
-- **Key Features**: Power Level, Public Approval, Civilian Casualties, and 8 binary power flags (Flight, Super Strength, etc.).
+### Dataset: 1200 records with 17 features
+- **Target**: `is_good` (65% Hero, 35% Villain)
+- **Features**: Physical (height, weight, age), Behavioral (power_level, casualties, training), Powers (8 binary flags)
 
 ---
 
 ## 2. Methods
 
-### 2.1 Classification (Predicting Hero vs Villain)
-We trained three supervised learning models to predict the `is_good` label:
-1. **Logistic Regression**: A linear baseline.
-2. **Random Forest**: An ensemble method to capture non-linear relationships.
-3. **Support Vector Machine (SVM)**: For finding optimal hyperplanes.
+### 2.1 Feature Engineering (7 New Features)
+- `total_powers`: Count of all powers
+- `power_efficiency`: power_level / years_active
+- `training_intensity`: training_hours / age
+- `casualty_rate`: casualties / years_active
+- `approval_power_ratio`: approval / power_level
+- `bmi`: weight / height²
+- `experience_score`: years_active × training_hours
 
-**Features Used**: All physical traits, powers, and behavioral metrics (scaled).
+### 2.2 Classification Models Tested (19 Total)
+| Category | Models |
+|----------|--------|
+| Linear | Logistic Regression, LDA, QDA |
+| Tree-based | Decision Tree, Random Forest, Extra Trees, Gradient Boosting, HistGradientBoosting, AdaBoost |
+| Instance-based | KNN (k=5, k=10) |
+| SVM | Linear, RBF, Polynomial kernels |
+| Probabilistic | Naive Bayes |
+| Neural Network | MLP (small/medium/large) |
+| Ensemble | Voting Classifier, Stacking Classifier |
 
-### 2.2 Clustering (Refined Approach)
-We used **K-Means Clustering** to find archetypes. To improve separation quality:
-- **Feature Selection**: We removed noisy physical traits (height/weight/age) and focused on **behavioral metrics** (`public_approval`, `casualties`, `power_level`) and **powers**.
-- **K=4** was selected using the Elbow Method.
-- **Archetype Labeling**: Clusters were named based on their mean approval and hero/villain composition.
+### 2.3 Hyperparameter Tuning
+GridSearchCV with 5-fold CV for RF, GB, and SVM.
+
+### 2.4 Clustering Methods
+- K-Means (k=2-9)
+- DBSCAN (various eps/min_samples)
+- Agglomerative Hierarchical (ward/complete/average linkage)
 
 ---
 
 ## 3. Results
 
 ### 3.1 Classification Performance
-| Model | Accuracy |
-|-------|----------|
-| **Logistic Regression** | **65.0%** |
-| Random Forest | 64.6% |
-| SVM | 62.1% |
+| Model | CV Accuracy | Test Accuracy |
+|-------|-------------|---------------|
+| **Gradient Boosting (Tuned)** | **65.0%** | **65.0%** |
+| SVM (Linear) | 65.0% | 65.0% |
+| LDA | 63.9% | 65.0% |
+| Logistic Regression | 63.8% | 64.6% |
+| Random Forest | 62.6% | 64.2% |
 
-**Key Insight**: The linear model performed best, suggesting the boundary between "Good" and "Bad" is relatively straightforward based on public metrics (Approval Rating & Casualties).
+**Key Insight**: All models plateau around 65% accuracy. The dataset lacks strong signal to differentiate hero/villain beyond this ceiling.
 
-### 3.2 Clustering Archetypes (Discovered Groups)
-Using K-Means (k=4) on behavioral features, we identified distinct groups primarily driven by their public perception:
+### 3.2 Top Predictive Features
+1. `power_level`
+2. `training_intensity` (engineered)
+3. `training_hours_per_week`
 
-1. **Public Heroes**: Characters with high approval ratings (>60%) and positive alignment.
-2. **Public Villains**: Characters with low approval, high casualties, and villain alignment.
-3. **Street-Level Characters**: Moderate power levels and lower public visibility.
-4. **Destructive Forces**: High power levels combined with high casualty counts.
-
-**Silhouette Score**: 0.081 (Indicates moderate overlap between groups, typical for complex character data).
+### 3.3 Clustering Results
+| Method | Best Config | Silhouette |
+|--------|-------------|------------|
+| **K-Means** | **k=2** | **0.167** |
+| Hierarchical | n=2, ward | ~0.15 |
+| DBSCAN | Various | Poor separation |
 
 ---
 
 ## 4. Conclusions
 
-1. **Behavior defines Alignment**: Public approval and civilian casualties are much stronger predictors of being a "Hero" or "Villain" than specific superpowers (like Flight or Strength).
-2. **Archetypes Exist**: While many characters share traits, distinct clusters of high-profile heroes vs. destructive villains emerged.
-3. **Model Performance**: Predicting morality is difficult (65% accuracy), implying that the "Hero vs Villain" label depends on unobserved factors (e.g., origin story, specific actions) beyond raw stats.
+1. **Feature engineering helped**: Engineered features like `training_intensity` ranked highly
+2. **Model ceiling ~65%**: The hero/villain label likely depends on unobserved narrative factors
+3. **Clustering finds 2 natural groups**: High power vs low power characters
+4. **Powers alone don't predict morality**: Behavioral metrics matter more
 
 ---
 
-## Appendix: Deliverables
-- `superhero_analysis.ipynb`: Complete code.
-- `presentation.pptx`: Slides summarizing the project.
+## Appendix: Files
+- `superhero_analysis.ipynb`: Complete analysis code
+- `superhero_enhanced_clusters.csv`: Dataset with clusters
+- `model_comparison_results.csv`: All model metrics

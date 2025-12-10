@@ -46,17 +46,16 @@ jupyter notebook superhero_analysis.ipynb
 ## 📊 Results Summary
 
 ### Classification Performance
-| Model | Accuracy |
-|-------|----------|
-| Logistic Regression | ~72% |
-| Random Forest | ~68% |
-| SVM | ~70% |
+| Model | Cross-val Accuracy | Held-out Accuracy |
+|-------|--------------------|-------------------|
+| Random Forest (tuned) | ~0.64 | ~0.67 |
+| SVM (rbf) | ~0.65 | ~0.65 |
+| Logistic Regression | ~0.63 | ~0.65 |
 
 ### Discovered Archetypes
-- **Public Heroes**: High power + high approval
-- **Street-Level Heroes**: Moderate power, community focus
-- **Vigilantes**: High power, mixed approval
-- **Supervillains**: High power + high casualties
+- **Operative Hero (Rebel, Protector)**: Lower power/training, low casualties
+- **Powerhouse Hero (Rebel, Protector)**: Higher power with low casualties
+- **Operative Hero (Disciplined, Ruthless)**: Moderate power with higher casualties
 
 ## 📁 Project Structure
 
