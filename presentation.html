@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; page-break-before: always; }
+        h1:first-of-type { page-break-before: avoid; }
+        h2 { color: #34495e; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; }
+        h3 { color: #7f8c8d; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #3498db; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+        pre { background-color: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        img { max-width: 100%; height: auto; margin: 20px 0; display: block; }
+        hr { border: none; border-top: 2px solid #3498db; margin: 30px 0; page-break-after: always; }
+        .emoji { font-size: 1.2em; }
+    </style>
+</head>
+<body>
+<h1>Superhero Attributes and Power Classification</h1>
+<h2>A Comprehensive Data Mining Analysis</h2>
+<p><strong>DSCI 4411 - Fundamentals of Data Mining</strong><br />
+<strong>The American University in Cairo</strong><br />
+<strong>Fall 2025</strong></p>
+<hr />
+<h1>Presentation Outline</h1>
+<ol>
+<li>Introduction &amp; Problem Statement</li>
+<li>Dataset Description</li>
+<li>Exploratory Data Analysis (with all visualizations)</li>
+<li>Methodology</li>
+<li>Classification Results</li>
+<li>Clustering Analysis</li>
+<li>Key Findings &amp; Discussion</li>
+<li>Conclusions</li>
+</ol>
+<hr />
+<h1>1. Introduction</h1>
+<hr />
+<h2>Problem Statement</h2>
+<h3>What are we trying to solve?</h3>
+<p><strong>Two main objectives:</strong></p>
+<ol>
+<li>
+<p><strong>Classification</strong>: Can we predict if a superhero is a HERO or VILLAIN based on their attributes?</p>
+</li>
+<li>
+<p><strong>Clustering</strong>: Can we discover natural character ARCHETYPES (groupings) in superhero universes?</p>
+</li>
+</ol>
+<hr />
+<h2>Why This Matters</h2>
+<ul>
+<li><strong>Content Recommendation</strong>: Suggest similar characters in comics/movies</li>
+<li><strong>Character Design</strong>: Understand what traits define heroes vs villains</li>
+<li><strong>Narrative Analysis</strong>: Discover patterns across fictional universes</li>
+<li><strong>Data Mining Practice</strong>: Apply classification &amp; clustering techniques</li>
+</ul>
+<hr />
+<h1>2. Dataset Description</h1>
+<hr />
+<h2>Dataset Overview</h2>
+<p><strong>Source</strong>: Kaggle Super-Heros Dataset</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Records</strong></td>
+<td>1,200 characters</td>
+</tr>
+<tr>
+<td><strong>Total Features</strong></td>
+<td>17</td>
+</tr>
+<tr>
+<td><strong>Target Variable</strong></td>
+<td><code>is_good</code> (Hero=1, Villain=0)</td>
+</tr>
+<tr>
+<td><strong>Class Balance</strong></td>
+<td>65% Heroes / 35% Villains</td>
+</tr>
+<tr>
+<td><strong>Missing Values</strong></td>
+<td>None ✓</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Feature Categories</h2>
+<h3>Physical Attributes (4 features)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>height_cm</td>
+<td>Height in centimeters</td>
+<td>150-250</td>
+</tr>
+<tr>
+<td>weight_kg</td>
+<td>Weight in kilograms</td>
+<td>45-128</td>
+</tr>
+<tr>
+<td>age</td>
+<td>Character age</td>
+<td>18-100+</td>
+</tr>
+<tr>
+<td>years_active</td>
+<td>Years as hero/villain</td>
+<td>1-50</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Feature Categories (continued)</h2>
+<h3>Behavioral Metrics (4 features)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+<th>Why Important</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>power_level</td>
+<td>Overall power rating (0-100)</td>
+<td>Measures strength</td>
+</tr>
+<tr>
+<td>public_approval_rating</td>
+<td>Public perception (0-100)</td>
+<td>How people view them</td>
+</tr>
+<tr>
+<td>training_hours_per_week</td>
+<td>Training intensity (0-60)</td>
+<td>Dedication level</td>
+</tr>
+<tr>
+<td>civilian_casualties_past_year</td>
+<td>Collateral damage (0-10)</td>
+<td>Destructiveness</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Feature Categories (continued)</h2>
+<h3>Superpower Flags (8 binary features)</h3>
+<table>
+<thead>
+<tr>
+<th>Power</th>
+<th>% of Characters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>super_strength</td>
+<td>28.8%</td>
+</tr>
+<tr>
+<td>flight</td>
+<td>31.4%</td>
+</tr>
+<tr>
+<td>energy_projection</td>
+<td>30.1%</td>
+</tr>
+<tr>
+<td>telepathy</td>
+<td>30.4%</td>
+</tr>
+<tr>
+<td>healing_factor</td>
+<td>30.8%</td>
+</tr>
+<tr>
+<td>shape_shifting</td>
+<td>31.7%</td>
+</tr>
+<tr>
+<td>invisibility</td>
+<td>31.5%</td>
+</tr>
+<tr>
+<td>telekinesis</td>
+<td>31.8%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Observation</strong>: All powers are ~30% prevalent - evenly distributed!</p>
+<hr />
+<h1>3. Exploratory Data Analysis</h1>
+<hr />
+<h2>Target Distribution</h2>
+<p><img alt="Target Distribution" src="figures/target_distribution.png" /></p>
+<h3>What This Shows:</h3>
+<ul>
+<li><strong>65% Heroes</strong> (780 characters)</li>
+<li><strong>35% Villains</strong> (420 characters)</li>
+<li>Slight class imbalance, but not severe</li>
+<li>No need for SMOTE or undersampling</li>
+</ul>
+<hr />
+<h2>Power Distribution Overview</h2>
+<p><img alt="Power Distribution" src="figures/power_distribution.png" /></p>
+<h3>What This Shows:</h3>
+<ul>
+<li>Horizontal bar chart of all 8 superpowers</li>
+<li>Telekinesis is most common (~382 characters)</li>
+<li>Super strength is least common (~345 characters)</li>
+<li>All powers have roughly equal prevalence</li>
+</ul>
+<hr />
+<h2>Power Distribution: Heroes vs Villains</h2>
+<p><img alt="Power Comparison" src="figures/power_comparison.png" /></p>
+<h3>Key Finding:</h3>
+<ul>
+<li><strong>Powers are distributed EQUALLY</strong> between heroes and villains</li>
+<li>Having flight or super_strength doesn't make you a hero</li>
+<li><strong>Superpowers alone cannot predict morality!</strong></li>
+</ul>
+<hr />
+<h2>Hero vs Villain Powers (Alternative View)</h2>
+<p><img alt="Hero Villain Powers" src="figures/hero_villain_powers.png" /></p>
+<h3>Detailed Comparison:</h3>
+<ul>
+<li>Side-by-side comparison for each power</li>
+<li>Green bars = Heroes, Red bars = Villains</li>
+<li>Confirms: <strong>No significant difference in power distribution</strong></li>
+</ul>
+<hr />
+<h2>Correlation Analysis</h2>
+<p><img alt="Correlation Heatmap" src="figures/correlation_heatmap.png" /></p>
+<h3>What This Shows:</h3>
+<ul>
+<li>Height &amp; weight are correlated (expected)</li>
+<li>Power flags show <strong>near-zero correlation</strong> with <code>is_good</code></li>
+<li>No multicollinearity issues</li>
+<li><strong>Weak feature-target correlations</strong> = prediction will be challenging</li>
+</ul>
+<hr />
+<h2>Numerical Feature Distributions</h2>
+<p><img alt="Numerical Distributions" src="figures/numerical_distributions.png" /></p>
+<h3>What This Shows:</h3>
+<ul>
+<li>Distribution of all numerical features</li>
+<li>Split by hero (green) vs villain (red)</li>
+<li><strong>Key Insight</strong>: Distributions overlap significantly</li>
+<li>No clear separation between classes</li>
+</ul>
+<hr />
+<h2>Box Plots: Heroes vs Villains</h2>
+<p><img alt="Boxplots Comparison" src="figures/boxplots_comparison.png" /></p>
+<h3>What This Shows:</h3>
+<ul>
+<li>Side-by-side box plots for each numerical feature</li>
+<li>Compares median, quartiles, and outliers</li>
+<li><strong>Observation</strong>: Very similar distributions across both classes</li>
+<li>Confirms why classification is difficult</li>
+</ul>
+<hr />
+<h1>4. Methodology</h1>
+<hr />
+<h2>Our Approach: 4-Stage Pipeline</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│  Stage 1: Feature Engineering                               │
+│  → Created 7 new features to improve predictions           │
+├─────────────────────────────────────────────────────────────┤
+│  Stage 2: Classification                                    │
+│  → Tested 19 different ML models                           │
+├─────────────────────────────────────────────────────────────┤
+│  Stage 3: Hyperparameter Tuning                            │
+│  → GridSearchCV for top models                             │
+├─────────────────────────────────────────────────────────────┤
+│  Stage 4: Clustering                                        │
+│  → K-Means, DBSCAN, Hierarchical                           │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>Stage 1: Feature Engineering</h2>
+<h3>We Created 7 New Features</h3>
+<table>
+<thead>
+<tr>
+<th>New Feature</th>
+<th>Formula</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>total_powers</strong></td>
+<td>Σ all power flags</td>
+<td>How many abilities?</td>
+</tr>
+<tr>
+<td><strong>power_efficiency</strong></td>
+<td>power_level / years_active</td>
+<td>Power gained per year</td>
+</tr>
+<tr>
+<td><strong>training_intensity</strong></td>
+<td>training_hours / age</td>
+<td>Relative effort</td>
+</tr>
+<tr>
+<td><strong>casualty_rate</strong></td>
+<td>casualties / years_active</td>
+<td>Damage per year</td>
+</tr>
+<tr>
+<td><strong>approval_power_ratio</strong></td>
+<td>approval / power_level</td>
+<td>Public trust vs power</td>
+</tr>
+<tr>
+<td><strong>bmi</strong></td>
+<td>weight / height²</td>
+<td>Physical build</td>
+</tr>
+<tr>
+<td><strong>experience_score</strong></td>
+<td>years × training_hours</td>
+<td>Total experience</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Stage 2: Classification Models Tested</h2>
+<h3>We Tested 19 Different Algorithms!</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Models</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linear</strong></td>
+<td>Logistic Regression, LDA, QDA</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Tree-based</strong></td>
+<td>Decision Tree, Random Forest, Extra Trees, Gradient Boosting, HistGB, AdaBoost, XGBoost</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>SVM</strong></td>
+<td>Linear, RBF, Polynomial kernels</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Instance-based</strong></td>
+<td>KNN (k=5), KNN (k=10)</td>
+<td>2</td>
+</tr>
+<tr>
+<td><strong>Probabilistic</strong></td>
+<td>Naive Bayes</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Neural Network</strong></td>
+<td>MLP (3 architectures)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>19</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Stage 3: Hyperparameter Tuning</h2>
+<h3>GridSearchCV with 5-Fold Cross-Validation</h3>
+<p><strong>Random Forest Tuning:</strong></p>
+<pre><code class="language-python">params = {
+    'n_estimators': [100, 200, 300],
+    'max_depth': [5, 10, 15, None],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+# 108 combinations tested!
+</code></pre>
+<p><strong>Gradient Boosting Tuning:</strong></p>
+<pre><code class="language-python">params = {
+    'n_estimators': [100, 200],
+    'learning_rate': [0.01, 0.1, 0.2],
+    'max_depth': [3, 5, 7]
+}
+# 36 combinations tested!
+</code></pre>
+<hr />
+<h2>Stage 4: Clustering Algorithms</h2>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Parameters Explored</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>K-Means</strong></td>
+<td>k = 2 to 9</td>
+</tr>
+<tr>
+<td><strong>DBSCAN</strong></td>
+<td>eps = [0.5, 1.0, 1.5, 2.0], min_samples = [3, 5, 10]</td>
+</tr>
+<tr>
+<td><strong>Hierarchical</strong></td>
+<td>n = [2, 3, 4, 5], linkage = ['ward', 'complete', 'average']</td>
+</tr>
+</tbody>
+</table>
+<h3>Features Used for Clustering:</h3>
+<ul>
+<li>power_level, civilian_casualties, training_hours</li>
+<li>years_active, public_approval</li>
+<li>total_powers, power_efficiency (engineered)</li>
+</ul>
+<hr />
+<h1>5. Classification Results</h1>
+<hr />
+<h2>All 19 Models Comparison</h2>
+<p><img alt="Model Comparison All" src="figures/model_comparison_all.png" /></p>
+<h3>Key Observations:</h3>
+<ul>
+<li><strong>All models cluster around 60-65% accuracy</strong></li>
+<li>Simple models (LDA, LogReg) match complex ones (RF, GB)</li>
+<li>Neural networks did NOT outperform tree models</li>
+<li><strong>Accuracy ceiling exists</strong> regardless of model complexity</li>
+</ul>
+<hr />
+<h2>Simple Model Comparison</h2>
+<p><img alt="Model Comparison" src="figures/model_comparison.png" /></p>
+<h3>Initial 3-Model Comparison:</h3>
+<ul>
+<li>Logistic Regression, Random Forest, SVM</li>
+<li>All achieve similar accuracy (~63-65%)</li>
+<li>Confirms linear separability with weak signal</li>
+</ul>
+<hr />
+<h2>Top 5 Models</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Model</th>
+<th>CV Accuracy</th>
+<th>Test Accuracy</th>
+<th>F1 Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🥇</td>
+<td><strong>LDA</strong></td>
+<td>63.9%</td>
+<td><strong>65.0%</strong></td>
+<td>0.778</td>
+</tr>
+<tr>
+<td>🥈</td>
+<td><strong>SVM (Linear)</strong></td>
+<td>65.0%</td>
+<td><strong>65.0%</strong></td>
+<td>0.788</td>
+</tr>
+<tr>
+<td>🥉</td>
+<td>Logistic Regression</td>
+<td>63.8%</td>
+<td>64.6%</td>
+<td>0.776</td>
+</tr>
+<tr>
+<td>4</td>
+<td>AdaBoost</td>
+<td>63.5%</td>
+<td>64.6%</td>
+<td>0.768</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Random Forest</td>
+<td>62.6%</td>
+<td>64.2%</td>
+<td>0.768</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best Model</strong>: Gradient Boosting (Tuned) @ <strong>65.0% accuracy</strong></p>
+<hr />
+<h2>Hyperparameter Tuning Results</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Best Parameters</th>
+<th>Test Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Random Forest</strong></td>
+<td>max_depth=15, n_estimators=200</td>
+<td>63.3%</td>
+</tr>
+<tr>
+<td><strong>Gradient Boosting</strong></td>
+<td>learning_rate=0.01, max_depth=3</td>
+<td><strong>65.0%</strong></td>
+</tr>
+<tr>
+<td><strong>SVM</strong></td>
+<td>C=1, kernel='poly'</td>
+<td>62.1%</td>
+</tr>
+</tbody>
+</table>
+<h3>Ensemble Methods:</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Test Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Voting (RF + GB + LR)</td>
+<td>63.8%</td>
+</tr>
+<tr>
+<td>Stacking (RF + GB + KNN → LR)</td>
+<td>63.3%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ensembles did NOT beat individual tuned models!</strong></p>
+<hr />
+<h2>Feature Importance: Logistic Regression</h2>
+<p><img alt="LR Feature Importance" src="figures/lr_feature_importance.png" /></p>
+<h3>Logistic Regression Coefficients:</h3>
+<ul>
+<li>Shows absolute coefficient values</li>
+<li>Linear model's view of feature importance</li>
+<li>Different ranking than tree-based models</li>
+</ul>
+<hr />
+<h2>Feature Importance: Random Forest</h2>
+<p><img alt="RF Feature Importance" src="figures/rf_feature_importance.png" /></p>
+<h3>Random Forest Feature Importance:</h3>
+<ul>
+<li>Based on Gini impurity reduction</li>
+<li>Tree-based perspective on features</li>
+<li><code>training_hours_per_week</code> ranks highly</li>
+</ul>
+<hr />
+<h2>Feature Importance: Tuned Random Forest</h2>
+<p><img alt="Feature Importance Tuned" src="figures/feature_importance_tuned.png" /></p>
+<h3>Top 3 Predictive Features (Tuned Model):</h3>
+<ol>
+<li><strong>power_level</strong> - Overall power rating</li>
+<li><strong>training_intensity</strong> - (Engineered feature!)</li>
+<li><strong>training_hours_per_week</strong> - Training dedication</li>
+</ol>
+<p><strong>Note</strong>: Engineered feature ranked #2 → Feature engineering helped!</p>
+<hr />
+<h2>Confusion Matrices: All Models</h2>
+<p><img alt="Confusion Matrices" src="figures/confusion_matrices.png" /></p>
+<h3>Comparison Across Models:</h3>
+<ul>
+<li>Shows prediction patterns for multiple models</li>
+<li>All models show similar confusion patterns</li>
+<li>Higher true positives for Heroes (majority class)</li>
+</ul>
+<hr />
+<h2>Confusion Matrix: Best Model</h2>
+<p><img alt="Confusion Matrix Best" src="figures/confusion_matrix_best.png" /></p>
+<h3>Analysis of Best Model:</h3>
+<ul>
+<li>Model correctly identifies most Heroes</li>
+<li>Struggles more with Villains (minority class)</li>
+<li>Slight bias toward predicting "Hero"</li>
+</ul>
+<hr />
+<h1>6. Clustering Analysis</h1>
+<hr />
+<h2>Elbow Method</h2>
+<p><img alt="Elbow Method" src="figures/elbow_method.png" /></p>
+<h3>Finding Optimal k:</h3>
+<ul>
+<li>Inertia (within-cluster sum of squares) decreases with k</li>
+<li>Look for "elbow" point where decrease slows</li>
+<li>Suggests k=3 or k=4 as candidates</li>
+</ul>
+<hr />
+<h2>Silhouette Score Analysis</h2>
+<p><img alt="Silhouette Scores" src="figures/silhouette_scores.png" /></p>
+<h3>Cluster Quality Metric:</h3>
+<ul>
+<li>Silhouette score measures cluster separation</li>
+<li>Range: -1 to 1 (higher = better separation)</li>
+<li><strong>Best score at k=2</strong></li>
+</ul>
+<hr />
+<h2>Combined: Elbow + Silhouette</h2>
+<p><img alt="Elbow and Silhouette" src="figures/elbow_silhouette.png" /></p>
+<h3>How We Chose k:</h3>
+<ul>
+<li><strong>Elbow Method</strong>: Look for "bend" in inertia curve</li>
+<li><strong>Silhouette Score</strong>: Measures cluster separation quality</li>
+<li><strong>Best k = 2</strong> with Silhouette = 0.167</li>
+</ul>
+<hr />
+<h2>Clustering Algorithms Comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Best Config</th>
+<th>Silhouette Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>K-Means</strong></td>
+<td>k=2</td>
+<td><strong>0.167</strong> ✓ Best</td>
+</tr>
+<tr>
+<td>Hierarchical</td>
+<td>n=2, ward</td>
+<td>0.154</td>
+</tr>
+<tr>
+<td>DBSCAN</td>
+<td>eps=1.5</td>
+<td>Poor (too much noise)</td>
+</tr>
+</tbody>
+</table>
+<h3>Why K-Means Won:</h3>
+<ul>
+<li>Data is uniformly distributed (spherical clusters)</li>
+<li>DBSCAN struggles with uniform density</li>
+<li>Hierarchical is competitive but slightly worse</li>
+</ul>
+<hr />
+<h2>Cluster Analysis: Detailed View</h2>
+<p><img alt="Cluster Analysis" src="figures/cluster_analysis.png" /></p>
+<h3>Cluster Characteristics:</h3>
+<ul>
+<li>Shows cluster profiles across features</li>
+<li>Compares mean values for each cluster</li>
+<li>Identifies distinguishing characteristics</li>
+</ul>
+<hr />
+<h2>PCA Visualization: Original Clusters</h2>
+<p><img alt="Clustering PCA" src="figures/clustering_pca.png" /></p>
+<h3>2D Projection of Clusters:</h3>
+<ul>
+<li>PCA reduces dimensions for visualization</li>
+<li>Shows cluster separation in 2D space</li>
+<li>Cluster centers marked with X</li>
+</ul>
+<hr />
+<h2>PCA Visualization: Final Clusters</h2>
+<p><img alt="Cluster PCA Final" src="figures/cluster_pca_final.png" /></p>
+<h3>Refined Clustering View:</h3>
+<ul>
+<li>Named archetypes overlaid on PCA</li>
+<li>Shows distribution of character types</li>
+<li>Legend identifies each archetype</li>
+</ul>
+<hr />
+<h2>PCA Comparison: Clusters vs Ground Truth</h2>
+<p><img alt="Clustering PCA Comparison" src="figures/clustering_pca_comparison.png" /></p>
+<h3>Left: K-Means Clusters | Right: Actual Hero/Villain Labels</h3>
+<p><strong>Key Insight</strong>: Clusters found by K-Means are <strong>NOT</strong> hero/villain groups!
+- Clustering finds <strong>power-based</strong> groups
+- High-power vs Low-power characters
+- This matches comic lore: heroes and villains span all power levels</p>
+<hr />
+<h2>Cluster Profiles (k=2)</h2>
+<table>
+<thead>
+<tr>
+<th>Cluster</th>
+<th>Size</th>
+<th>Power Level</th>
+<th>Casualties</th>
+<th>Character Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cluster 0</strong></td>
+<td>~600</td>
+<td>High (60+)</td>
+<td>Higher</td>
+<td>High-Power Characters</td>
+</tr>
+<tr>
+<td><strong>Cluster 1</strong></td>
+<td>~600</td>
+<td>Low-Mid (&lt;60)</td>
+<td>Lower</td>
+<td>Regular Characters</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Natural groupings are POWER-BASED, not MORALITY-BASED</strong></p>
+<hr />
+<h1>7. Key Findings &amp; Discussion</h1>
+<hr />
+<h2>Why Does Accuracy Plateau at ~65%?</h2>
+<h3>4 Reasons:</h3>
+<ol>
+<li><strong>Weak Feature-Target Correlation</strong></li>
+<li>Correlation between features and <code>is_good</code> ≈ 0</li>
+<li>
+<p>Features don't strongly predict morality</p>
+</li>
+<li>
+<p><strong>Powers Are Equally Distributed</strong></p>
+</li>
+<li>Heroes and villains have the same superpowers</li>
+<li>No power is exclusive to heroes or villains</li>
+</ol>
+<hr />
+<h2>Why Does Accuracy Plateau at ~65%? (continued)</h2>
+<ol>
+<li><strong>Missing Narrative Features</strong></li>
+<li>Real hero/villain distinction depends on:<ul>
+<li>Origin story ("bitten by spider" vs "fell into acid")</li>
+<li>Motivations (save people vs revenge)</li>
+<li>Team affiliations (Avengers vs Hydra)</li>
+</ul>
+</li>
+<li>
+<p>None of these are in our dataset!</p>
+</li>
+<li>
+<p><strong>Possible Synthetic Data</strong></p>
+</li>
+<li>Dataset may be artificially generated</li>
+<li>Random assignment of labels explains weak signal</li>
+</ol>
+<hr />
+<h2>Feature Engineering Impact</h2>
+<h3>Did Our 7 Engineered Features Help?</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Importance Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>training_intensity</td>
+<td><strong>#2</strong> ✓</td>
+</tr>
+<tr>
+<td>power_efficiency</td>
+<td>Top 10</td>
+</tr>
+<tr>
+<td>total_powers</td>
+<td>Top 10</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Yes! But overall improvement was only ~1-2% accuracy</strong></p>
+<p>The dataset's fundamental limitations cannot be overcome with engineering.</p>
+<hr />
+<h2>Clustering Insights</h2>
+<h3>What We Learned:</h3>
+<ol>
+<li><strong>Data splits by POWER, not MORALITY</strong></li>
+<li>High-power group vs Low-power group</li>
+<li>
+<p>Not hero group vs villain group</p>
+</li>
+<li>
+<p><strong>This Makes Sense in Comics!</strong></p>
+</li>
+<li>Superman (hero) and Darkseid (villain) are both high-power</li>
+<li>Hawkeye (hero) and Crossbones (villain) are both low-power</li>
+<li>Power level ≠ Moral alignment</li>
+</ol>
+<hr />
+<h1>8. Conclusions</h1>
+<hr />
+<h2>Summary of Results</h2>
+<h3>Classification:</h3>
+<ul>
+<li>Tested <strong>19 models</strong> → Best accuracy: <strong>65%</strong></li>
+<li>Simple linear models work as well as complex ensembles</li>
+<li>Top features: power_level, training_intensity, training_hours</li>
+</ul>
+<h3>Clustering:</h3>
+<ul>
+<li><strong>K-Means (k=2)</strong> found the best clusters</li>
+<li>Clusters are <strong>power-based</strong>, not hero/villain-based</li>
+<li>Silhouette score: 0.167 (moderate separation)</li>
+</ul>
+<hr />
+<h2>Key Takeaways</h2>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🎯 Accuracy ceiling at 65%</td>
+<td>Dataset lacks predictive signal</td>
+</tr>
+<tr>
+<td>⚡ Powers don't define morality</td>
+<td>Villains and heroes share same abilities</td>
+</tr>
+<tr>
+<td>📊 Behavioral features matter most</td>
+<td>power_level, training are key</td>
+</tr>
+<tr>
+<td>🔍 Natural clusters are power-based</td>
+<td>Not hero/villain groups</td>
+</tr>
+<tr>
+<td>🧪 Feature engineering helped</td>
+<td>But couldn't break the ceiling</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Limitations</h2>
+<ol>
+<li><strong>Dataset may be synthetic</strong></li>
+<li>
+<p>Random label assignment explains weak patterns</p>
+</li>
+<li>
+<p><strong>Missing key features</strong></p>
+</li>
+<li>
+<p>No text descriptions, origin stories, affiliations</p>
+</li>
+<li>
+<p><strong>Binary labels too simplistic</strong></p>
+</li>
+<li>Real characters have moral complexity (anti-heroes)</li>
+</ol>
+<hr />
+<h2>Future Work</h2>
+<ol>
+<li><strong>Acquire richer data</strong></li>
+<li>Character descriptions, origin stories</li>
+<li>
+<p>Team affiliations, universe data</p>
+</li>
+<li>
+<p><strong>Multi-class classification</strong></p>
+</li>
+<li>
+<p>Predict alignment spectrum (Lawful Good → Chaotic Evil)</p>
+</li>
+<li>
+<p><strong>Graph analysis</strong></p>
+</li>
+<li>
+<p>Model character relationships &amp; interactions</p>
+</li>
+<li>
+<p><strong>NLP on text</strong></p>
+</li>
+<li>Use character bios for prediction</li>
+</ol>
+<hr />
+<h1>Technical Details</h1>
+<hr />
+<h2>Tools &amp; Technologies Used</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Language</strong></td>
+<td>Python 3.10</td>
+</tr>
+<tr>
+<td><strong>Data Processing</strong></td>
+<td>pandas, numpy</td>
+</tr>
+<tr>
+<td><strong>ML Models</strong></td>
+<td>scikit-learn, XGBoost</td>
+</tr>
+<tr>
+<td><strong>Visualization</strong></td>
+<td>matplotlib, seaborn</td>
+</tr>
+<tr>
+<td><strong>Environment</strong></td>
+<td>Jupyter Notebook</td>
+</tr>
+<tr>
+<td><strong>Version Control</strong></td>
+<td>Git, GitHub</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Code &amp; Outputs</h2>
+<h3>File Structure:</h3>
+<pre><code>superhero_project/
+├── superhero_analysis.ipynb          ← Main code
+├── superhero_analysis_executed.ipynb ← With outputs
+├── figures/                          ← 22 visualizations
+├── model_comparison_results.csv      ← All model metrics
+├── superhero_enhanced_clusters.csv   ← Data with clusters
+└── report.md                         ← Full documentation
+</code></pre>
+<h3>GitHub Repository:</h3>
+<p><strong>https://github.com/elbarbary/superhero-classification</strong></p>
+<hr />
+<h2>Complete Figure Gallery (22 Figures)</h2>
+<h3>Exploratory Data Analysis:</h3>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>target_distribution.png</td>
+<td>Class balance (65% heroes, 35% villains)</td>
+</tr>
+<tr>
+<td>power_distribution.png</td>
+<td>Frequency of each superpower</td>
+</tr>
+<tr>
+<td>power_comparison.png</td>
+<td>Powers split by hero/villain</td>
+</tr>
+<tr>
+<td>hero_villain_powers.png</td>
+<td>Detailed hero vs villain power comparison</td>
+</tr>
+<tr>
+<td>correlation_heatmap.png</td>
+<td>Feature correlations</td>
+</tr>
+<tr>
+<td>numerical_distributions.png</td>
+<td>Histograms of all numerical features</td>
+</tr>
+<tr>
+<td>boxplots_comparison.png</td>
+<td>Box plots comparing classes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Complete Figure Gallery (continued)</h2>
+<h3>Classification Results:</h3>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_comparison.png</td>
+<td>Initial 3-model comparison</td>
+</tr>
+<tr>
+<td>model_comparison_all.png</td>
+<td>All 19 models ranked</td>
+</tr>
+<tr>
+<td>lr_feature_importance.png</td>
+<td>Logistic Regression coefficients</td>
+</tr>
+<tr>
+<td>rf_feature_importance.png</td>
+<td>Random Forest importance</td>
+</tr>
+<tr>
+<td>feature_importance_tuned.png</td>
+<td>Tuned RF importance</td>
+</tr>
+<tr>
+<td>confusion_matrices.png</td>
+<td>Multiple model confusion matrices</td>
+</tr>
+<tr>
+<td>confusion_matrix_best.png</td>
+<td>Best model confusion matrix</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Complete Figure Gallery (continued)</h2>
+<h3>Clustering Analysis:</h3>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>elbow_method.png</td>
+<td>K-Means inertia curve</td>
+</tr>
+<tr>
+<td>silhouette_scores.png</td>
+<td>Silhouette scores for different k</td>
+</tr>
+<tr>
+<td>elbow_silhouette.png</td>
+<td>Combined elbow + silhouette</td>
+</tr>
+<tr>
+<td>cluster_analysis.png</td>
+<td>Cluster characteristic profiles</td>
+</tr>
+<tr>
+<td>clustering_pca.png</td>
+<td>PCA visualization with clusters</td>
+</tr>
+<tr>
+<td>cluster_pca_final.png</td>
+<td>Final named archetypes</td>
+</tr>
+<tr>
+<td>clustering_pca_comparison.png</td>
+<td>Clusters vs ground truth</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1>Thank You!</h1>
+<h2>Questions?</h2>
+<hr />
+<h3>Contact &amp; Resources</h3>
+<p><strong>GitHub</strong>: https://github.com/elbarbary/superhero-classification</p>
+<p><strong>Dataset</strong>: https://www.kaggle.com/datasets/kenil1719/super-heros</p>
+<p><strong>Course</strong>: DSCI 4411 - Fundamentals of Data Mining<br />
+<strong>The American University in Cairo - Fall 2025</strong></p>
+</body>
+</html>
