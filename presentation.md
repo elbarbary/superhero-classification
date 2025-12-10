@@ -11,7 +11,7 @@
 
 1. Introduction & Problem Statement
 2. Dataset Description
-3. Exploratory Data Analysis
+3. Exploratory Data Analysis (with all visualizations)
 4. Methodology
 5. Classification Results
 6. Clustering Analysis
@@ -122,6 +122,18 @@
 
 ---
 
+## Power Distribution Overview
+
+![Power Distribution](figures/power_distribution.png)
+
+### What This Shows:
+- Horizontal bar chart of all 8 superpowers
+- Telekinesis is most common (~382 characters)
+- Super strength is least common (~345 characters)
+- All powers have roughly equal prevalence
+
+---
+
 ## Power Distribution: Heroes vs Villains
 
 ![Power Comparison](figures/power_comparison.png)
@@ -130,6 +142,17 @@
 - **Powers are distributed EQUALLY** between heroes and villains
 - Having flight or super_strength doesn't make you a hero
 - **Superpowers alone cannot predict morality!**
+
+---
+
+## Hero vs Villain Powers (Alternative View)
+
+![Hero Villain Powers](figures/hero_villain_powers.png)
+
+### Detailed Comparison:
+- Side-by-side comparison for each power
+- Green bars = Heroes, Red bars = Villains
+- Confirms: **No significant difference in power distribution**
 
 ---
 
@@ -142,6 +165,30 @@
 - Power flags show **near-zero correlation** with `is_good`
 - No multicollinearity issues
 - **Weak feature-target correlations** = prediction will be challenging
+
+---
+
+## Numerical Feature Distributions
+
+![Numerical Distributions](figures/numerical_distributions.png)
+
+### What This Shows:
+- Distribution of all numerical features
+- Split by hero (green) vs villain (red)
+- **Key Insight**: Distributions overlap significantly
+- No clear separation between classes
+
+---
+
+## Box Plots: Heroes vs Villains
+
+![Boxplots Comparison](figures/boxplots_comparison.png)
+
+### What This Shows:
+- Side-by-side box plots for each numerical feature
+- Compares median, quartiles, and outliers
+- **Observation**: Very similar distributions across both classes
+- Confirms why classification is difficult
 
 ---
 
@@ -249,13 +296,24 @@ params = {
 
 ## All 19 Models Comparison
 
-![Model Comparison](figures/model_comparison_all.png)
+![Model Comparison All](figures/model_comparison_all.png)
 
 ### Key Observations:
 - **All models cluster around 60-65% accuracy**
 - Simple models (LDA, LogReg) match complex ones (RF, GB)
 - Neural networks did NOT outperform tree models
 - **Accuracy ceiling exists** regardless of model complexity
+
+---
+
+## Simple Model Comparison
+
+![Model Comparison](figures/model_comparison.png)
+
+### Initial 3-Model Comparison:
+- Logistic Regression, Random Forest, SVM
+- All achieve similar accuracy (~63-65%)
+- Confirms linear separability with weak signal
 
 ---
 
@@ -291,11 +349,33 @@ params = {
 
 ---
 
-## Feature Importance Analysis
+## Feature Importance: Logistic Regression
 
-![Feature Importance](figures/feature_importance_tuned.png)
+![LR Feature Importance](figures/lr_feature_importance.png)
 
-### Top 3 Predictive Features:
+### Logistic Regression Coefficients:
+- Shows absolute coefficient values
+- Linear model's view of feature importance
+- Different ranking than tree-based models
+
+---
+
+## Feature Importance: Random Forest
+
+![RF Feature Importance](figures/rf_feature_importance.png)
+
+### Random Forest Feature Importance:
+- Based on Gini impurity reduction
+- Tree-based perspective on features
+- `training_hours_per_week` ranks highly
+
+---
+
+## Feature Importance: Tuned Random Forest
+
+![Feature Importance Tuned](figures/feature_importance_tuned.png)
+
+### Top 3 Predictive Features (Tuned Model):
 1. **power_level** - Overall power rating
 2. **training_intensity** - (Engineered feature!)
 3. **training_hours_per_week** - Training dedication
@@ -304,11 +384,22 @@ params = {
 
 ---
 
+## Confusion Matrices: All Models
+
+![Confusion Matrices](figures/confusion_matrices.png)
+
+### Comparison Across Models:
+- Shows prediction patterns for multiple models
+- All models show similar confusion patterns
+- Higher true positives for Heroes (majority class)
+
+---
+
 ## Confusion Matrix: Best Model
 
-![Confusion Matrix](figures/confusion_matrix_best.png)
+![Confusion Matrix Best](figures/confusion_matrix_best.png)
 
-### Analysis:
+### Analysis of Best Model:
 - Model correctly identifies most Heroes
 - Struggles more with Villains (minority class)
 - Slight bias toward predicting "Hero"
@@ -319,7 +410,29 @@ params = {
 
 ---
 
-## Finding Optimal Number of Clusters
+## Elbow Method
+
+![Elbow Method](figures/elbow_method.png)
+
+### Finding Optimal k:
+- Inertia (within-cluster sum of squares) decreases with k
+- Look for "elbow" point where decrease slows
+- Suggests k=3 or k=4 as candidates
+
+---
+
+## Silhouette Score Analysis
+
+![Silhouette Scores](figures/silhouette_scores.png)
+
+### Cluster Quality Metric:
+- Silhouette score measures cluster separation
+- Range: -1 to 1 (higher = better separation)
+- **Best score at k=2**
+
+---
+
+## Combined: Elbow + Silhouette
 
 ![Elbow and Silhouette](figures/elbow_silhouette.png)
 
@@ -345,7 +458,40 @@ params = {
 
 ---
 
-## PCA Visualization: Clusters vs Reality
+## Cluster Analysis: Detailed View
+
+![Cluster Analysis](figures/cluster_analysis.png)
+
+### Cluster Characteristics:
+- Shows cluster profiles across features
+- Compares mean values for each cluster
+- Identifies distinguishing characteristics
+
+---
+
+## PCA Visualization: Original Clusters
+
+![Clustering PCA](figures/clustering_pca.png)
+
+### 2D Projection of Clusters:
+- PCA reduces dimensions for visualization
+- Shows cluster separation in 2D space
+- Cluster centers marked with X
+
+---
+
+## PCA Visualization: Final Clusters
+
+![Cluster PCA Final](figures/cluster_pca_final.png)
+
+### Refined Clustering View:
+- Named archetypes overlaid on PCA
+- Shows distribution of character types
+- Legend identifies each archetype
+
+---
+
+## PCA Comparison: Clusters vs Ground Truth
 
 ![Clustering PCA Comparison](figures/clustering_pca_comparison.png)
 
@@ -528,18 +674,48 @@ superhero_project/
 
 ---
 
-## Figures Summary
+## Complete Figure Gallery (22 Figures)
 
-| Figure | Purpose |
-|--------|---------|
-| target_distribution.png | Class balance |
-| power_comparison.png | Powers by hero/villain |
-| correlation_heatmap.png | Feature relationships |
-| model_comparison_all.png | All 19 models |
-| feature_importance_tuned.png | Key predictors |
-| confusion_matrix_best.png | Best model errors |
-| elbow_silhouette.png | Optimal k |
-| clustering_pca_comparison.png | Cluster visualization |
+### Exploratory Data Analysis:
+| Figure | Description |
+|--------|-------------|
+| target_distribution.png | Class balance (65% heroes, 35% villains) |
+| power_distribution.png | Frequency of each superpower |
+| power_comparison.png | Powers split by hero/villain |
+| hero_villain_powers.png | Detailed hero vs villain power comparison |
+| correlation_heatmap.png | Feature correlations |
+| numerical_distributions.png | Histograms of all numerical features |
+| boxplots_comparison.png | Box plots comparing classes |
+
+---
+
+## Complete Figure Gallery (continued)
+
+### Classification Results:
+| Figure | Description |
+|--------|-------------|
+| model_comparison.png | Initial 3-model comparison |
+| model_comparison_all.png | All 19 models ranked |
+| lr_feature_importance.png | Logistic Regression coefficients |
+| rf_feature_importance.png | Random Forest importance |
+| feature_importance_tuned.png | Tuned RF importance |
+| confusion_matrices.png | Multiple model confusion matrices |
+| confusion_matrix_best.png | Best model confusion matrix |
+
+---
+
+## Complete Figure Gallery (continued)
+
+### Clustering Analysis:
+| Figure | Description |
+|--------|-------------|
+| elbow_method.png | K-Means inertia curve |
+| silhouette_scores.png | Silhouette scores for different k |
+| elbow_silhouette.png | Combined elbow + silhouette |
+| cluster_analysis.png | Cluster characteristic profiles |
+| clustering_pca.png | PCA visualization with clusters |
+| cluster_pca_final.png | Final named archetypes |
+| clustering_pca_comparison.png | Clusters vs ground truth |
 
 ---
 
