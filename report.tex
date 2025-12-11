@@ -1,0 +1,534 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+
+% Page geometry
+\geometry{margin=1in}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{DSCI 4411 - Fall 2025}
+\lhead{Superhero Classification Project}
+\rfoot{Page \thepage}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true
+}
+
+% Title
+\title{
+    \textbf{Superhero Attributes and Power Classification} \\
+    \large A Data Mining Approach to Character Analysis \\[1cm]
+    \normalsize DSCI 4411 - Fundamentals of Data Mining \\
+    The American University in Cairo \\
+    Fall 2025
+}
+\author{}
+\date{December 11, 2025}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+This project applies classification and clustering techniques to analyze a dataset of 1,200 superhero and villain characters. We investigate whether machine learning models can distinguish between heroes and villains based on their attributes (powers, physical traits, behavioral metrics), and whether natural character archetypes emerge through unsupervised clustering. After testing 19 classification algorithms with extensive hyperparameter tuning, we find that all models plateau at approximately 65\% accuracy, suggesting that the available features lack sufficient signal to reliably predict moral alignment. Clustering analysis reveals that characters naturally group by power level rather than hero/villain status, providing insights into the structure of superhero universes.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Introduction}
+%=============================================================================
+
+\subsection{Problem Statement}
+
+The superhero genre has become one of the most prominent forms of modern storytelling, spanning comic books, films, television, and video games. Characters in these narratives are typically classified as either \textit{heroes} (protagonists who protect society) or \textit{villains} (antagonists who threaten it). This project addresses two fundamental questions:
+
+\begin{enumerate}
+    \item \textbf{Classification Problem}: Can we predict whether a character is a hero or villain based solely on their measurable attributes---such as their superpowers, physical characteristics, and behavioral patterns?
+    
+    \item \textbf{Clustering Problem}: Do natural groupings or ``archetypes'' exist among superhero characters that transcend the simple hero/villain binary?
+\end{enumerate}
+
+\subsection{Motivation}
+
+Understanding the patterns that differentiate heroes from villains has practical applications in:
+
+\begin{itemize}
+    \item \textbf{Content Recommendation Systems}: Suggesting similar characters to readers/viewers based on attribute profiles
+    \item \textbf{Character Design}: Informing writers and game designers about which attribute combinations are associated with heroic or villainous characters
+    \item \textbf{Narrative Analysis}: Quantifying trends across fictional universes to understand storytelling conventions
+    \item \textbf{Educational Value}: Demonstrating classification and clustering techniques on an engaging, accessible dataset
+\end{itemize}
+
+\subsection{Dataset Overview}
+
+We utilize the \textbf{Kaggle Super-Heros Dataset}\footnote{\url{https://www.kaggle.com/datasets/kenil1719/super-heros}}, which contains 1,200 character records with 17 features. The target variable is \texttt{is\_good}, a binary indicator where 1 represents a hero and 0 represents a villain. The dataset exhibits a moderate class imbalance: 65\% heroes (780 characters) and 35\% villains (420 characters).
+
+\subsection{Report Structure}
+
+The remainder of this report is organized as follows: Section~\ref{sec:methods} describes the methodology, including data preprocessing, feature engineering, classification algorithms, and clustering approaches. Section~\ref{sec:results} presents the experimental results with detailed analysis. Section~\ref{sec:conclusions} summarizes our findings and discusses limitations and future work.
+
+%=============================================================================
+\section{Methods}
+\label{sec:methods}
+%=============================================================================
+
+\subsection{Data Description}
+
+The dataset contains three categories of features:
+
+\subsubsection{Physical Attributes (4 features)}
+\begin{table}[H]
+\centering
+\caption{Physical attribute features}
+\begin{tabular}{lll}
+\toprule
+\textbf{Feature} & \textbf{Description} & \textbf{Range} \\
+\midrule
+\texttt{height\_cm} & Height in centimeters & 150--250 \\
+\texttt{weight\_kg} & Weight in kilograms & 45--128 \\
+\texttt{age} & Character age in years & 18--100+ \\
+\texttt{years\_active} & Years operating as hero/villain & 1--50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Behavioral Metrics (4 features)}
+\begin{table}[H]
+\centering
+\caption{Behavioral metric features}
+\begin{tabular}{lll}
+\toprule
+\textbf{Feature} & \textbf{Description} & \textbf{Range} \\
+\midrule
+\texttt{power\_level} & Overall power rating & 0--100 \\
+\texttt{public\_approval\_rating} & Public perception score & 0--100 \\
+\texttt{training\_hours\_per\_week} & Weekly training intensity & 0--60 \\
+\texttt{civilian\_casualties\_past\_year} & Collateral damage count & 0--10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Superpower Flags (8 binary features)}
+Eight binary indicators representing the presence or absence of specific superpowers: \texttt{super\_strength}, \texttt{flight}, \texttt{energy\_projection}, \texttt{telepathy}, \texttt{healing\_factor}, \texttt{shape\_shifting}, \texttt{invisibility}, and \texttt{telekinesis}. Each power is present in approximately 30\% of characters, with no significant difference in prevalence between heroes and villains.
+
+\subsection{Exploratory Data Analysis}
+
+Initial exploration revealed several important characteristics:
+
+\begin{enumerate}
+    \item \textbf{Class Balance}: The target variable shows a 65/35 split (heroes/villains), representing moderate imbalance that does not necessitate resampling techniques.
+    
+    \item \textbf{Feature-Target Correlation}: Correlation analysis revealed that no individual feature has a strong linear relationship with the target variable. The highest absolute correlation with \texttt{is\_good} is approximately 0.15, indicating weak predictive signal in individual features.
+    
+    \item \textbf{Power Distribution}: Superpowers are distributed nearly equally between heroes and villains, suggesting that the type of power a character possesses does not determine their moral alignment.
+    
+    \item \textbf{No Missing Values}: The dataset is complete with no missing values requiring imputation.
+\end{enumerate}
+
+\subsection{Feature Engineering}
+
+To enhance the predictive power of our models, we engineered six additional features that capture relationships between existing attributes:
+
+\begin{table}[H]
+\centering
+\caption{Engineered features and their rationale}
+\label{tab:engineered}
+\begin{tabular}{lll}
+\toprule
+\textbf{Feature} & \textbf{Formula} & \textbf{Rationale} \\
+\midrule
+\texttt{total\_powers} & $\sum_{i=1}^{8} \text{power}_i$ & Character versatility \\
+\texttt{power\_efficiency} & $\frac{\text{power\_level}}{\text{years\_active} + 1}$ & Talent vs. experience \\
+\texttt{training\_intensity} & $\frac{\text{training\_hours}}{\text{age}}$ & Relative dedication \\
+\texttt{approval\_power\_ratio} & $\frac{\text{approval}}{\text{power\_level} + 1}$ & Public trust relative to power \\
+\texttt{bmi} & $\frac{\text{weight}}{(\text{height}/100)^2}$ & Physical archetype \\
+\texttt{experience\_score} & $\text{years\_active} \times \text{training\_hours}$ & Lifetime mastery \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \texttt{training\_intensity} feature proved particularly valuable, ranking as the second most important predictor in our tuned Random Forest model.
+
+\subsection{Data Preprocessing}
+
+\subsubsection{Train-Test Split}
+The dataset was split into training (80\%, $n=960$) and testing (20\%, $n=240$) sets using stratified sampling to preserve the class distribution.
+
+\subsubsection{Feature Scaling}
+For algorithms sensitive to feature magnitude (SVM, KNN, Neural Networks), we applied \texttt{StandardScaler} to transform features to zero mean and unit variance:
+\[
+z = \frac{x - \mu}{\sigma}
+\]
+
+Tree-based algorithms (Random Forest, Gradient Boosting) were trained on unscaled data, as they are invariant to monotonic transformations.
+
+\subsection{Classification Methodology}
+
+We evaluated 19 classification algorithms spanning six categories:
+
+\subsubsection{Linear Models}
+\begin{itemize}
+    \item Logistic Regression (with L2 regularization)
+    \item Linear Discriminant Analysis (LDA)
+    \item Quadratic Discriminant Analysis (QDA)
+\end{itemize}
+
+\subsubsection{Tree-Based Models}
+\begin{itemize}
+    \item Decision Tree
+    \item Random Forest (200 estimators)
+    \item Extra Trees (200 estimators)
+    \item Gradient Boosting
+    \item Histogram-based Gradient Boosting
+    \item AdaBoost
+    \item XGBoost
+\end{itemize}
+
+\subsubsection{Support Vector Machines}
+\begin{itemize}
+    \item SVM with Linear kernel
+    \item SVM with Radial Basis Function (RBF) kernel
+    \item SVM with Polynomial kernel (degree 3)
+\end{itemize}
+
+\subsubsection{Instance-Based Methods}
+\begin{itemize}
+    \item K-Nearest Neighbors ($k=5$)
+    \item K-Nearest Neighbors ($k=10$)
+\end{itemize}
+
+\subsubsection{Probabilistic Models}
+\begin{itemize}
+    \item Gaussian Naive Bayes
+\end{itemize}
+
+\subsubsection{Neural Networks}
+\begin{itemize}
+    \item Multi-Layer Perceptron with architectures: (50), (100, 50), (100, 100, 50)
+\end{itemize}
+
+\subsection{Hyperparameter Tuning}
+
+For the top-performing models, we conducted exhaustive grid search with 5-fold stratified cross-validation:
+
+\textbf{Random Forest:}
+\begin{lstlisting}
+n_estimators: [100, 200, 300]
+max_depth: [5, 10, 15, None]
+min_samples_split: [2, 5, 10]
+min_samples_leaf: [1, 2, 4]
+\end{lstlisting}
+
+\textbf{Gradient Boosting:}
+\begin{lstlisting}
+n_estimators: [100, 200]
+learning_rate: [0.01, 0.1, 0.2]
+max_depth: [3, 5, 7]
+\end{lstlisting}
+
+\textbf{SVM:}
+\begin{lstlisting}
+C: [0.1, 1, 10, 100]
+gamma: ['scale', 'auto', 0.1, 0.01]
+kernel: ['rbf', 'poly']
+\end{lstlisting}
+
+\subsection{Ensemble Methods}
+
+We implemented two ensemble strategies:
+
+\begin{enumerate}
+    \item \textbf{Voting Classifier}: Hard voting combination of tuned Random Forest, Gradient Boosting, and Logistic Regression
+    \item \textbf{Stacking Classifier}: Random Forest, Gradient Boosting, and KNN as base learners with Logistic Regression as the meta-learner
+\end{enumerate}
+
+\subsection{Clustering Methodology}
+
+For unsupervised analysis, we selected seven behavioral features for clustering, deliberately excluding the target variable \texttt{is\_good} to avoid data leakage:
+
+\begin{itemize}
+    \item \texttt{power\_level}
+    \item \texttt{civilian\_casualties\_past\_year}
+    \item \texttt{training\_hours\_per\_week}
+    \item \texttt{years\_active}
+    \item \texttt{public\_approval\_rating}
+    \item \texttt{total\_powers} (engineered)
+    \item \texttt{power\_efficiency} (engineered)
+\end{itemize}
+
+\subsubsection{Clustering Performed in High-Dimensional Space}
+
+An important methodological note: \textbf{clustering was performed on the full 7-dimensional feature space}, not on reduced PCA components. Principal Component Analysis was applied \textbf{only for visualization purposes} after clustering was complete. This ensures that the clustering algorithm had access to all available information when forming groups.
+
+\subsubsection{Algorithms Tested}
+\begin{enumerate}
+    \item \textbf{K-Means}: Tested $k \in \{2, 3, ..., 9\}$ with 20 random initializations
+    \item \textbf{DBSCAN}: Grid search over $\epsilon \in \{0.5, 1.0, 1.5, 2.0\}$ and $\text{min\_samples} \in \{3, 5, 10\}$
+    \item \textbf{Agglomerative Clustering}: Tested $n \in \{2, 3, 4, 5\}$ with linkage methods: ward, complete, average
+\end{enumerate}
+
+\subsubsection{Evaluation Metrics}
+\begin{itemize}
+    \item \textbf{Silhouette Score}: Measures how similar objects are to their own cluster compared to other clusters. Range: $[-1, 1]$, higher is better.
+    \item \textbf{Elbow Method}: Visual inspection of inertia (within-cluster sum of squares) to identify the optimal number of clusters.
+\end{itemize}
+
+%=============================================================================
+\section{Results}
+\label{sec:results}
+%=============================================================================
+
+\subsection{Classification Results}
+
+\subsubsection{Model Comparison}
+
+Table~\ref{tab:classification} presents the performance of all 19 classification algorithms, sorted by test accuracy.
+
+\begin{table}[H]
+\centering
+\caption{Classification model performance (sorted by test accuracy)}
+\label{tab:classification}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{CV Accuracy} & \textbf{Test Accuracy} & \textbf{F1 Score} \\
+\midrule
+LDA & 63.9\% & \textbf{65.0\%} & 0.778 \\
+SVM (Linear) & 65.0\% & \textbf{65.0\%} & 0.788 \\
+Logistic Regression & 63.8\% & 64.6\% & 0.776 \\
+AdaBoost & 63.5\% & 64.6\% & 0.768 \\
+Random Forest & 62.6\% & 64.2\% & 0.768 \\
+Gradient Boosting & 62.9\% & 63.3\% & 0.766 \\
+Extra Trees & 61.5\% & 62.9\% & 0.758 \\
+SVM (RBF) & 64.8\% & 62.5\% & 0.752 \\
+MLP (100, 50) & 62.1\% & 62.1\% & 0.748 \\
+KNN (k=5) & 57.7\% & 60.8\% & 0.737 \\
+Decision Tree & 55.2\% & 58.8\% & 0.715 \\
+XGBoost & 58.5\% & 58.3\% & 0.708 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Observation}: All models cluster within a narrow accuracy range of 58--65\%, with simple linear models (LDA, Logistic Regression) performing comparably to complex ensemble methods. This suggests that the problem is approximately linearly separable but contains insufficient signal for higher accuracy.
+
+\subsubsection{Hyperparameter Tuning Results}
+
+\begin{table}[H]
+\centering
+\caption{Hyperparameter tuning results for top models}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Model} & \textbf{Best Parameters} & \textbf{CV Score} & \textbf{Test Score} \\
+\midrule
+Random Forest & max\_depth=15, n\_estimators=200 & 65.7\% & 63.3\% \\
+Gradient Boosting & learning\_rate=0.01, max\_depth=3 & 65.0\% & \textbf{65.0\%} \\
+SVM & C=1, kernel='poly' & 65.0\% & 62.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Ensemble Performance}
+
+\begin{table}[H]
+\centering
+\caption{Ensemble method performance}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Ensemble} & \textbf{CV Accuracy} & \textbf{Test Accuracy} \\
+\midrule
+Voting (RF + GB + LR) & 64.1\% & 63.8\% \\
+Stacking (RF + GB + KNN $\rightarrow$ LR) & 62.3\% & 63.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Notably, ensemble methods did \textbf{not} outperform the best individual tuned models, indicating that we have reached the performance ceiling for this dataset.
+
+\subsubsection{Feature Importance Analysis}
+
+Figure~\ref{fig:importance} shows the feature importance scores from the tuned Random Forest model.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/feature_importance_tuned.png}
+\caption{Feature importance from tuned Random Forest classifier}
+\label{fig:importance}
+\end{figure}
+
+The top three predictive features are:
+\begin{enumerate}
+    \item \texttt{power\_level} --- Overall power rating
+    \item \texttt{training\_intensity} --- Engineered feature (training hours / age)
+    \item \texttt{training\_hours\_per\_week} --- Raw training dedication
+\end{enumerate}
+
+The presence of an engineered feature (\texttt{training\_intensity}) in the top three validates our feature engineering approach.
+
+\subsection{Clustering Results}
+
+\subsubsection{Optimal Number of Clusters}
+
+Figure~\ref{fig:elbow} shows the combined elbow method and silhouette analysis for K-Means clustering.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/elbow_silhouette.png}
+\caption{Elbow method (inertia) and silhouette score analysis}
+\label{fig:elbow}
+\end{figure}
+
+The silhouette score peaks at $k=2$ with a value of 0.167, indicating that the data naturally forms two distinct groups.
+
+\subsubsection{Algorithm Comparison}
+
+\begin{table}[H]
+\centering
+\caption{Clustering algorithm performance}
+\begin{tabular}{llc}
+\toprule
+\textbf{Algorithm} & \textbf{Best Configuration} & \textbf{Silhouette Score} \\
+\midrule
+K-Means & $k=2$ & \textbf{0.167} \\
+Agglomerative & $n=2$, linkage=ward & 0.154 \\
+DBSCAN & Various & Poor (excessive noise) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+K-Means produced the best results, which is expected given the relatively uniform density of the data (DBSCAN struggles with such distributions).
+
+\subsubsection{Cluster Interpretation}
+
+Analysis of the two clusters reveals that they correspond to \textbf{power levels} rather than moral alignment:
+
+\begin{table}[H]
+\centering
+\caption{Cluster profiles (mean values)}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Cluster} & \textbf{Size} & \textbf{Power Level} & \textbf{Casualties} & \textbf{Training} & \textbf{\% Heroes} \\
+\midrule
+Cluster 0 & $\sim$600 & High (60+) & Higher & Moderate & 64\% \\
+Cluster 1 & $\sim$600 & Low-Mid (<60) & Lower & Variable & 66\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Critical Finding}: Both clusters contain nearly equal proportions of heroes and villains (64--66\%), confirming that the unsupervised algorithm does \textbf{not} discover hero/villain groupings. Instead, it identifies:
+\begin{itemize}
+    \item \textbf{Cluster 0}: High-power characters (both heroes like Superman and villains like Darkseid)
+    \item \textbf{Cluster 1}: Lower-power characters (both heroes like Hawkeye and villains like Crossbones)
+\end{itemize}
+
+\subsubsection{PCA Visualization}
+
+Figure~\ref{fig:pca} shows the clustering results projected onto two principal components.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/clustering_pca_comparison.png}
+\caption{PCA visualization: K-Means clusters (left) vs. actual hero/villain labels (right)}
+\label{fig:pca}
+\end{figure}
+
+The left panel shows the clusters found by K-Means; the right panel shows the ground truth labels. The visual comparison confirms that cluster boundaries do not align with hero/villain categories.
+
+%=============================================================================
+\section{Conclusions}
+\label{sec:conclusions}
+%=============================================================================
+
+\subsection{Summary of Findings}
+
+This project investigated whether machine learning can distinguish heroes from villains and identify character archetypes in a superhero dataset. Our key findings are:
+
+\begin{enumerate}
+    \item \textbf{Classification Performance Ceiling}: Despite testing 19 algorithms with extensive hyperparameter tuning and feature engineering, classification accuracy plateaus at approximately 65\%. Simple linear models (LDA, Logistic Regression) perform as well as complex ensembles, suggesting the problem is linearly separable but lacks sufficient signal.
+    
+    \item \textbf{Feature Engineering Value}: Engineered features, particularly \texttt{training\_intensity}, ranked among the top predictors, demonstrating that domain-informed feature creation can extract additional signal from raw data.
+    
+    \item \textbf{Superpowers Do Not Determine Morality}: The eight superpower flags are distributed equally between heroes and villains. Having flight or super strength does not predict whether a character is good or evil.
+    
+    \item \textbf{Natural Clusters Are Power-Based}: Unsupervised clustering reveals two groups based on power level, not moral alignment. Both high-power and low-power clusters contain similar proportions of heroes and villains.
+    
+    \item \textbf{Behavioral Metrics Are Most Predictive}: Features like \texttt{power\_level} and \texttt{training\_hours} are the strongest predictors, suggesting that dedication and capability---not specific powers---differentiate characters.
+\end{enumerate}
+
+\subsection{Limitations}
+
+Several limitations affect the generalizability of our results:
+
+\begin{enumerate}
+    \item \textbf{Potential Synthetic Data}: The dataset's uniform distributions and weak correlations suggest it may be synthetically generated, which would explain the limited predictive signal.
+    
+    \item \textbf{Missing Narrative Features}: Real hero/villain distinctions depend on factors not captured in numerical attributes:
+    \begin{itemize}
+        \item Origin stories (e.g., ``bitten by radioactive spider'' vs. ``fell into chemical vat'')
+        \item Motivations and intentions
+        \item Team affiliations (Avengers vs. Hydra)
+        \item Specific narrative events
+    \end{itemize}
+    
+    \item \textbf{Binary Label Oversimplification}: The binary \texttt{is\_good} label ignores the moral complexity of characters like anti-heroes (e.g., Punisher, Deadpool).
+\end{enumerate}
+
+\subsection{Future Work}
+
+Based on our findings, we recommend several directions for future research:
+
+\begin{enumerate}
+    \item \textbf{Richer Data Acquisition}: Incorporate text-based features (character descriptions, origin stories) using natural language processing techniques.
+    
+    \item \textbf{Multi-Class Classification}: Extend beyond binary labels to predict alignment spectra (e.g., Lawful Good, Chaotic Neutral, Chaotic Evil).
+    
+    \item \textbf{Graph-Based Analysis}: Model character relationships and interactions as a network to capture affiliation patterns.
+    
+    \item \textbf{Cross-Universe Analysis}: Compare patterns across different fictional universes (Marvel, DC, independent publishers).
+\end{enumerate}
+
+\subsection{Reproducibility}
+
+All code and data are available at: \url{https://github.com/elbarbary/superhero-classification}
+
+The analysis was conducted using Python 3.10 with the following key libraries: pandas, scikit-learn, matplotlib, seaborn, and XGBoost.
+
+%=============================================================================
+% References
+%=============================================================================
+\begin{thebibliography}{9}
+
+\bibitem{kaggle}
+Kenil Shah, ``Super-Heros Dataset,'' Kaggle, 2023. [Online]. Available: \url{https://www.kaggle.com/datasets/kenil1719/super-heros}
+
+\bibitem{sklearn}
+F. Pedregosa et al., ``Scikit-learn: Machine Learning in Python,'' Journal of Machine Learning Research, vol. 12, pp. 2825--2830, 2011.
+
+\bibitem{silhouette}
+P. J. Rousseeuw, ``Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis,'' Computational and Applied Mathematics, vol. 20, pp. 53--65, 1987.
+
+\end{thebibliography}
+
+\end{document}
